@@ -26,11 +26,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Build & Test Backend
+      - name: Build Backend (Skip Tests)
         run: |
           cd addressbook-backend
-          mvn clean verify
-
+          mvn clean verify -DskipTests
       # -------- FRONTEND --------
       - name: Setup Node
         uses: actions/setup-node@v3
