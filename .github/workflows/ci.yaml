@@ -7,9 +7,8 @@ on:
     branches: [ "main" ]
 
 env:
-  REGISTRY: docker.io
-  BACKEND_IMAGE: hardik0811/addressbook-backend
-  FRONTEND_IMAGE: hardik0811/addressbook-frontend
+  BACKEND_IMAGE: docker.io/hardik0811/addressbook-backend
+  FRONTEND_IMAGE: docker.io/hardik0811/addressbook-frontend
 
 jobs:
   build-test:
@@ -20,7 +19,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # ---------------- BACKEND ----------------
+      # -------- BACKEND --------
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
@@ -32,7 +31,7 @@ jobs:
           cd addressbook-backend
           mvn clean verify
 
-      # ---------------- FRONTEND ----------------
+      # -------- FRONTEND --------
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -58,16 +57,21 @@ jobs:
         with:
           username: hardik0811
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      # Build Images
+
+      # -------- BACKEND --------
       - name: Build Backend Image
-        working-directory: addressbook-backend
-        run: docker build -t docker.io/hardik0811/addressbook-backend:latest .
+        run: docker build -t $BACKEND_IMAGE:latest ./addressbook-backend
 
+      - name: Push Backend Image
+        run: docker push $BACKEND_IMAGE:latest
+
+      # -------- FRONTEND --------
       - name: Build Frontend Image
-        working-directory: addressbook-frontend
-        run: docker build -t docker.io/hardik0811/addressbook-frontend:latest .
+        run: docker build -t $FRONTEND_IMAGE:latest ./addressbook-frontend
 
-      
+      - name: Push Frontend Image
+        run: docker push $FRONTEND_IMAGE:latest
+
   security-scan:
     name: Security Scan (Trivy)
     needs: docker
