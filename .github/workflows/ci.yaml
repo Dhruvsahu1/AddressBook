@@ -39,7 +39,7 @@ jobs:
       - name: Build Frontend
         run: |
           cd addressbook-frontend
-          npm ci
+          npm install
           npm run build
 
   docker:
