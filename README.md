@@ -1,6 +1,7 @@
 # Address Book System
-[![AddressBook CI/CD](https://github.com/Dhruvsahu1/AddressBook/actions/workflows/ci.yaml/badge.svg)](https://github.com/Dhruvsahu1/AddressBook/actions/workflows/ci.yaml)
 A complete full-stack Address Book System with Java Spring Boot backend and React frontend.
+
+[![AddressBook CI/CD](https://github.com/Dhruvsahu1/AddressBook/actions/workflows/ci.yaml/badge.svg)](https://github.com/Dhruvsahu1/AddressBook/actions/workflows/ci.yaml)
 
 ## Features
 
