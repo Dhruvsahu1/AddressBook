@@ -14,17 +14,12 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of ContactService.
- * UC16-UC20: Implements JDBC operations as well.
- */
 @Service
 public class ContactServiceImpl implements ContactService {
     
     private final ContactRepository contactRepository;
     private final Map<String, ContactPerson> inMemoryContacts = new HashMap<>();
     
-    // JDBC connection details
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/addressbook_db";
     private static final String JDBC_USER = "root";
     private static final String JDBC_PASSWORD = "root";
@@ -33,7 +28,6 @@ public class ContactServiceImpl implements ContactService {
         this.contactRepository = contactRepository;
     }
     
-    // UC1: Add new contact
     @Override
     public ContactDTO addContact(ContactDTO contactDTO) {
         boolean isDuplicate = contactRepository.findAll().stream()
@@ -54,7 +48,6 @@ public class ContactServiceImpl implements ContactService {
         return mapToDTO(saved);
     }
     
-    // UC2: Edit contact using name
     @Override
     public ContactDTO editContact(String firstName, String lastName, ContactDTO contactDTO) {
         ContactPerson existing = contactRepository.findByFirstNameAndLastName(firstName, lastName);
@@ -77,7 +70,6 @@ public class ContactServiceImpl implements ContactService {
         return mapToDTO(updated);
     }
     
-    // UC3: Delete contact using name
     @Override
     public boolean deleteContact(String firstName, String lastName) {
         ContactPerson existing = contactRepository.findByFirstNameAndLastName(firstName, lastName);
@@ -93,7 +85,6 @@ public class ContactServiceImpl implements ContactService {
         return true;
     }
     
-    // UC4: Add multiple contacts using Collections
     @Override
     public List<ContactDTO> addMultipleContacts(List<ContactDTO> contactDTOs) {
         List<ContactPerson> contacts = contactDTOs.stream()
@@ -126,7 +117,6 @@ public class ContactServiceImpl implements ContactService {
                 .orElseThrow(() -> new ContactNotFoundException("Contact not found with id: " + id));
     }
     
-    // UC7: Search contacts by city or state
     @Override
     public List<ContactDTO> searchByCity(String city) {
         return contactRepository.findByCity(city).stream()
@@ -141,7 +131,6 @@ public class ContactServiceImpl implements ContactService {
                 .collect(Collectors.toList());
     }
     
-    // UC8: View persons grouped by city or state
     @Override
     public Map<String, List<ContactDTO>> groupByCity() {
         return contactRepository.findAll().stream()
@@ -160,7 +149,6 @@ public class ContactServiceImpl implements ContactService {
                 ));
     }
     
-    // UC9: Count contacts by city or state
     @Override
     public Map<String, Long> countByCity() {
         List<Object[]> results = contactRepository.countByCity();
@@ -181,7 +169,6 @@ public class ContactServiceImpl implements ContactService {
         return counts;
     }
     
-    // UC10: Sort contacts alphabetically by name
     @Override
     public List<ContactDTO> sortByName() {
         return contactRepository.findAll().stream()
@@ -191,7 +178,6 @@ public class ContactServiceImpl implements ContactService {
                 .collect(Collectors.toList());
     }
     
-    // UC11: Sort contacts by city, state, or zip
     @Override
     public List<ContactDTO> sortByCity() {
         return contactRepository.findAll().stream()
@@ -216,7 +202,6 @@ public class ContactServiceImpl implements ContactService {
                 .collect(Collectors.toList());
     }
     
-    // UC18: Retrieve contacts added between date ranges
     @Override
     public List<ContactDTO> getContactsByDateRange(String startDate, String endDate) {
         LocalDate start = LocalDate.parse(startDate);
@@ -226,7 +211,6 @@ public class ContactServiceImpl implements ContactService {
                 .collect(Collectors.toList());
     }
     
-    // UC16: Retrieve all entries using JDBC
     @Override
     public List<ContactDTO> getAllContactsJDBC() {
         List<ContactDTO> contacts = new ArrayList<>();
@@ -247,7 +231,7 @@ public class ContactServiceImpl implements ContactService {
                 dto.setZip(rs.getString("zip"));
                 dto.setPhoneNumber(rs.getString("phone_number"));
                 dto.setEmail(rs.getString("email"));
-                Date date = rs.getDate("date_added");
+                java.sql.Date date = rs.getDate("date_added");
                 if (date != null) {
                     dto.setDateAdded(date.toLocalDate());
                 }
@@ -260,7 +244,6 @@ public class ContactServiceImpl implements ContactService {
         return contacts;
     }
     
-    // UC17: Update contact using JDBC and sync memory
     @Override
     public ContactDTO updateContactJDBC(Long id, ContactDTO contactDTO) {
         String query = "UPDATE contacts SET address = ?, city = ?, state = ?, zip = ?, " +
@@ -283,18 +266,15 @@ public class ContactServiceImpl implements ContactService {
             throw new RuntimeException("Error updating contact via JDBC", e);
         }
         
-        // Sync with JPA and in-memory
         return getContactById(id);
     }
     
-    // UC20: Insert contact with transaction support
     @Override
     @Transactional
     public ContactDTO insertWithTransaction(ContactDTO contactDTO) {
         return addContact(contactDTO);
     }
     
-    // Helper methods
     private ContactPerson mapToEntity(ContactDTO dto) {
         ContactPerson entity = new ContactPerson();
         if (dto.getId() != null) {
