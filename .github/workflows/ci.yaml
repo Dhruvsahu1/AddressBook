@@ -1,0 +1,89 @@
+name: AddressBook CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: docker.io
+  BACKEND_IMAGE: hardik0811/addressbook-backend
+  FRONTEND_IMAGE: hardik0811/addressbook-frontend
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # ---------------- BACKEND ----------------
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build & Test Backend
+        run: |
+          cd addressbook-backend
+          mvn clean verify
+
+      # ---------------- FRONTEND ----------------
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Build Frontend
+        run: |
+          cd addressbook-frontend
+          npm ci
+          npm run build
+
+  docker:
+    name: Build & Push Docker Images
+    needs: build-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: hardik0811
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      # Build Images
+      - name: Build Backend Image
+        working-directory: addressbook-backend
+        run: docker build -t docker.io/hardik0811/addressbook-backend:latest .
+
+      - name: Build Frontend Image
+        working-directory: addressbook-frontend
+        run: docker build -t docker.io/hardik0811/addressbook-frontend:latest .
+
+      
+  security-scan:
+    name: Security Scan (Trivy)
+    needs: docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Scan Backend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.BACKEND_IMAGE }}:latest
+          format: table
+          exit-code: 0
+
+      - name: Scan Frontend Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.FRONTEND_IMAGE }}:latest
+          format: table
+          exit-code: 0
