@@ -57,12 +57,6 @@ jobs:
           username: hardik0811
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      # -------- BACKEND --------
-      - name: Build Backend Image
-        run: docker build -t $BACKEND_IMAGE:latest ./addressbook-backend
-
-      - name: Push Backend Image
-        run: docker push $BACKEND_IMAGE:latest
 
       # -------- FRONTEND --------
       - name: Build Frontend Image
@@ -70,6 +64,13 @@ jobs:
 
       - name: Push Frontend Image
         run: docker push $FRONTEND_IMAGE:latest
+      # -------- BACKEND --------
+      - name: Build Backend Image
+        run: docker build -t $BACKEND_IMAGE:latest ./addressbook-backend
+
+      - name: Push Backend Image
+        run: docker push $BACKEND_IMAGE:latest
+
 
   security-scan:
     name: Security Scan (Trivy)
